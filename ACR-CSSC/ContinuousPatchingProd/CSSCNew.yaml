@@ -1,11 +1,12 @@
 version: v1.1.0
 alias:
   values:
-    ScanAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
+    ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
 steps:
-  - cmd: bash -c 'echo inside CSSCNew.yaml'                               
-  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > repos.txt
-  - cmd: bash -c 'cat repos.txt'
+  - cmd: bash -c 'echo -e "\e[32mInside CSSCNew\e[0m"'
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 > filterRepos.txt
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > internalFilterRepos.txt
+  - cmd: bash -c 'echo -e "\e[32mScaning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy. \n$(cat filterRepos.txt)\e[0m"'
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
@@ -19,6 +20,6 @@ steps:
         else \
         OriginalTag=$TagName;
         fi;
-        echo -e "\e[32m Scheduling Image Scan and Patch for Registry : $RegistryName, Repo : $RepoName, Tag : $TagName, OriginalTag : $OriginalTag \e[0m";
-        az acr task run --name $ScanAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
-        done < repos.txt;'
+        echo -e "\e[32mScheduling ScanImageAndSchedulePatchTask for $RegistryName/$RepoName, Tag:$TagName, OriginalTag:$OriginalTag\e[0m";
+        az acr task run --name $ScanImageAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
+        done < internalFilterRepos.txt;'

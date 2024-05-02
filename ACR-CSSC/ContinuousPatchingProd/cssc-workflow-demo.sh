@@ -47,7 +47,7 @@ function create_continuous_patching_workflow(){
   hours=$(date -u -d "@$new_utc" "+%H")
   minutes=$(date -u -d "@$new_utc" "+%M")
   cronExpression="$minutes $hours * * *"
-  cd ACR-CSSC/ContinuousPatching
+  cd ACR-CSSC/ContinuousPatchingProd
   
   # Deploy using az deployment group create command
   echo "deploying cssc workflow tasks for registry $ACR_REGISTRY..."
@@ -80,7 +80,7 @@ function create_continuous_patching_workflow(){
 function download_required_artifacts(){
   echo_header "Downloading required artifacts..."
   local git_repo_url="https://github.com/Ruchii-27/ACR-CSSC.git"
-  local acrfolder="ACR-CSSC/ContinuousPatching"
+  local acrfolder="ACR-CSSC/ContinuousPatchingProd"
   local bicep_file_name="CSSC-AutoImagePatching.bicep"
   if [ -f "$acrfolder/$bicep_file_name" ]; then
 	  echo "File '$bicep_file_name' already cached in your local."
