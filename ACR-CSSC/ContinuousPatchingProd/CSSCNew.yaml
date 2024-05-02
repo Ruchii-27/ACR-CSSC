@@ -1,0 +1,24 @@
+version: v1.1.0
+alias:
+  values:
+    ScanAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
+steps:
+  - cmd: bash -c 'echo inside CSSCNew.yaml'                               
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > repos.txt
+  - cmd: bash -c 'cat repos.txt'
+  - cmd: az login --identity 
+  - cmd: |
+        mcr.microsoft.com/azure-cli bash -c 'while read line;do \
+        IFS='/' read -r -a array1 <<< "$line"
+        IFS=':' read -r -a array2 <<< "${array1[1]}"
+        RegistryName=${array1[0]};
+        RepoName=${array2[0]};
+        TagName=${array2[1]};        
+        if [[ "$TagName" == *"-patched" ]]; then \
+        OriginalTag=${TagName%-patched};
+        else \
+        OriginalTag=$TagName;
+        fi;
+        echo -e "\e[32m Scheduling Image Scan and Patch for Registry : $RegistryName, Repo : $RepoName, Tag : $TagName, OriginalTag : $OriginalTag \e[0m";
+        az acr task run --name $ScanAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
+        done < repos.txt;'

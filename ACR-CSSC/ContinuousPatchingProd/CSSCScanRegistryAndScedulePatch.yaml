@@ -1,0 +1,25 @@
+version: v1.1.0
+alias:
+  values:
+    ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
+steps:
+  - cmd: bash -c 'echo -e "\e[32mInside CSSC-ScanRegistryAndScedulePatch\e[0m"'
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 > filterRepos.txt
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > internalFilterRepos.txt
+  - cmd: bash -c 'echo -e "\e[32mScaning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy. \n$(cat filterRepos.txt)\e[0m"'
+  - cmd: az login --identity 
+  - cmd: |
+        mcr.microsoft.com/azure-cli bash -c 'while read line;do \
+        IFS='/' read -r -a array1 <<< "$line"
+        IFS=':' read -r -a array2 <<< "${array1[1]}"
+        RegistryName=${array1[0]};
+        RepoName=${array2[0]};
+        TagName=${array2[1]};        
+        if [[ "$TagName" == *"-patched" ]]; then \
+        OriginalTag=${TagName%-patched};
+        else \
+        OriginalTag=$TagName;
+        fi;
+        echo -e "\e[32mScheduling ScanImageAndSchedulePatchTask for $RegistryName/$RepoName, Tag:$TagName, OriginalTag:$OriginalTag\e[0m";
+        az acr task run --name $ScanImageAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
+        done < internalFilterRepos.txt;'
