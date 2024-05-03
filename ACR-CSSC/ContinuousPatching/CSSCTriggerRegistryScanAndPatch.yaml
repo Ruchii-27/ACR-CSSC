@@ -3,9 +3,9 @@ alias:
   values:
     ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
 steps:
-  - cmd: bash -c 'echo "Inside CSSC-ScanRegistryAndScedulePatch"'
+  - cmd: bash -c 'echo "Inside CSSC-TriggerRegistryScanAndPatch, browsing Registry {{.Run.Registry}} for images to be patched."'
   - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 > filterRepos.txt
-  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > internalFilterRepos.txt
+  - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --show-patch-tags > filterReposWithPatchTags.txt
   - cmd: bash -c 'echo -e "Scaning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
 # - cmd: az cloud register -n dogfood --endpoint-active-directory https://login.windows-ppe.net --endpoint-active-directory-graph-resource-id https://graph.ppe.windows.net/ --endpoint-active-directory-resource-id https://management.core.windows.net/ --endpoint-gallery https://current.gallery.azure-test.net/ --endpoint-management https://management.core.windows.net/ --endpoint-resource-manager https://api-dogfood.resources.windows-int.net/ --suffix-storage-endpoint core.test-cint.azure-test.net --suffix-keyvault-dns .vault-int.azure-int.net --suffix-acr-login-server-endpoint .azurecr-test.io --endpoint-sql-management "https://management.core.windows.net:8443/"
 # - cmd: az cloud set -n dogfood
@@ -14,14 +14,11 @@ steps:
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
         IFS='/' read -r -a array1 <<< "$line"
         IFS=':' read -r -a array2 <<< "${array1[1]}"
+        IFS=',' read -r -a array3 <<< "${array2[1]}"
         RegistryName=${array1[0]};
         RepoName=${array2[0]};
-        TagName=${array2[1]};        
-        if [[ "$TagName" == *"-patched" ]]; then \
-        OriginalTag=${TagName%-patched};
-        else \
-        OriginalTag=$TagName;
-        fi;
+        OriginalTag=${array3[0]};
+        TagName=${array3[1]};  
         echo "Scheduling ScanImageAndSchedulePatchTask for $RegistryName/$RepoName, Tag:$TagName, OriginalTag:$OriginalTag";
         az acr task run --name $ScanImageAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
-        done < internalFilterRepos.txt;'
+        done < filterReposWithPatchTags.txt;'
