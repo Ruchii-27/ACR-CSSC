@@ -6,7 +6,7 @@ steps:
   - cmd: bash -c 'echo "Inside CSSC-ScanRegistryAndScedulePatch"'
   - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 > filterRepos.txt
   - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --internal > internalFilterRepos.txt
-  - cmd: bash -c 'echo "Scaning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy. \n$(cat filterRepos.txt)"'
+  - cmd: bash -c 'echo -e "Scaning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
