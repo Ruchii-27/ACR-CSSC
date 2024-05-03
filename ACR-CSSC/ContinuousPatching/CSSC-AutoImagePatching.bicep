@@ -2,9 +2,9 @@ param AcrName string
 param AcrLocation string = resourceGroup().location
 
 var taskContextPath='https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow'
-var imagePatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCPatchImage.yaml'
-var imageScanning='ACR-CSSC\\ContinuousPatchingProd\\CSSCScanImageAndSchedulePatch.yaml'
-var registryPatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCTriggerRegistryScanAndPatch.yaml'
+var imagePatching='ACR-CSSC\\ContinuousPatching\\CSSCPatchImage.yaml'
+var imageScanning='ACR-CSSC\\ContinuousPatching\\CSSCScanImageAndSchedulePatch.yaml'
+var registryPatching='ACR-CSSC\\ContinuousPatching\\CSSCTriggerRegistryScanAndPatch.yaml'
 
 resource contributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: subscription()
