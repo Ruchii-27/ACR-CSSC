@@ -2,10 +2,9 @@ param AcrName string
 param AcrLocation string = resourceGroup().location
 
 var taskContextPath='https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow'
-var imagePatching='ACR-CSSC\\ContinuousPatching\\CSSCPatchImage.yaml'
-var imageScanning='ACR-CSSC\\ContinuousPatching\\CSSCScanImageAndScedulePatch.yaml'
-var repoPatching='ACR-CSSC\\ContinuousPatching\\CSSCScanRepoAndScedulePatch.yaml'
-var registryPatching='ACR-CSSC\\ContinuousPatching\\CSSCScanRegistryAndScedulePatch.yaml'
+var imagePatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCPatchImage.yaml'
+var imageScanning='ACR-CSSC\\ContinuousPatchingProd\\CSSCScanImageAndSchedulePatch.yaml'
+var registryPatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCScanRegistryAndSchedulePatch.yaml'
 
 resource contributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: subscription()
@@ -77,44 +76,6 @@ resource roleAssignmentCSSCImageScaning 'Microsoft.Authorization/roleAssignments
   properties: {
     roleDefinitionId: contributorRoleDefinition.id
     principalId: CSSCImageScaning.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource CSSCRepoScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-ScanRepoAndSchedulePatch'
-  location: AcrLocation
-  parent: acr
-  identity: {
-    type: 'SystemAssigned'
-  }
-  tags:{
-    cssc: 'true'
-  }
-  properties: {
-    platform: {
-      os: 'linux'
-      architecture: 'amd64'
-    }
-    agentConfiguration: {
-      cpu: 2
-    }
-    timeout: 3600
-    step: {
-      type: 'FileTask'
-      contextPath: taskContextPath
-      taskFilePath: repoPatching
-    }
-    isSystemTask: false
-  }
-}
-
-resource roleAssignmentCSSCRepoScaning 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: acr
-  name: guid(CSSCRepoScaning.id, contributorRoleDefinition.id)
-  properties: {
-    roleDefinitionId: contributorRoleDefinition.id
-    principalId: CSSCRepoScaning.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }
