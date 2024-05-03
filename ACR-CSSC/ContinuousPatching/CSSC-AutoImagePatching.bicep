@@ -4,7 +4,7 @@ param AcrLocation string = resourceGroup().location
 var taskContextPath='https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow'
 var imagePatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCPatchImage.yaml'
 var imageScanning='ACR-CSSC\\ContinuousPatchingProd\\CSSCScanImageAndSchedulePatch.yaml'
-var registryPatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCScanRegistryAndSchedulePatch.yaml'
+var registryPatching='ACR-CSSC\\ContinuousPatchingProd\\CSSCTriggerRegistryScanAndPatch.yaml'
 
 resource contributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: subscription()
@@ -69,7 +69,6 @@ resource CSSCImageScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-
   }
 }
 
-
 resource roleAssignmentCSSCImageScaning 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: acr
   name: guid(CSSCImageScaning.id, contributorRoleDefinition.id)
@@ -81,7 +80,7 @@ resource roleAssignmentCSSCImageScaning 'Microsoft.Authorization/roleAssignments
 }
 
 resource CSSCRegistryScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-ScanRegistryAndSchedulePatch'
+  name: 'CSSC-TriggerRegistryScanAndPatch'
   location: AcrLocation
   parent: acr
   identity: {
