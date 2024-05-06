@@ -22,7 +22,7 @@ steps:
   - id: upload-trivy-report
     cmd: |
       ghcr.io/oras-project/oras:v1.1.0 attach \
-      --artifact-type vulnerabilityScanResult/example \
+      --artifact-type vulnerabilityScan/report \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       ./data/vulnerability-report_trivy_$DATE.json
 
@@ -49,5 +49,5 @@ steps:
 
   - id: push-image
     cmd: docker push {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-patched
-    
+
   - cmd: echo "Patched image pushed to {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-patched"
