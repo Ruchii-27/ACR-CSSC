@@ -6,7 +6,7 @@ steps:
   # Step #1: Perform the vulnerability scan
   - id: print-inputs
     cmd: |
-        bash -c 'echo "Scan and Schedule Patch {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"'
+        bash -c 'echo "Scan, Upload scan report and Schedule Patch for {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"'
   - id: setup-data-dir
     cmd: bash mkdir ./data
   - id: generate-trivy-report
@@ -25,6 +25,8 @@ steps:
       --artifact-type vulnerabilityScanResult/example \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       ./data/vulnerability-report_trivy_$DATE.json
+
+  - cmd: echo "Uploaded vulnerability report to the image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"
 
   - id: buildkitd
     cmd: moby/buildkit --addr tcp://0.0.0.0:8888
@@ -47,3 +49,5 @@ steps:
 
   - id: push-image
     cmd: docker push {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-patched
+    
+  - cmd: echo "Patched image pushed to {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-patched"

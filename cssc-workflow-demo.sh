@@ -33,13 +33,15 @@ function create_continuous_patching_workflow(){
   local deploymentName="continuouspatchingdeployment"
   #local logfile="${LOG_FILE/template/continuousdeployment}"
   echo ""
-  echo "az acr cssc-workflow
-	   --name continuouspatch
-	   --type copa-patch-v1
-	   --registry $ACR_REGISTRY
-	   --parameters patch-tag-format='{{.Repository}}:{{.Tag}}-patched'"
+  echo "az acr cssc-workflow create
+		--registry <sampleregistry>
+		--type <continousPatching>
+		--filter <acr-continuous-patch-configuration.json>
+		--schedule '0 0 * * *'  ||  --schedule '1d' # to indicate continuous patching happens every day
+		[--do-not-run-immediately]"
   echo ""
   echo_separater
+
 
   current_utc=$(date -u +%s)
   ## schedule the continuous scan and patch task after task deployment + 120 seconds
