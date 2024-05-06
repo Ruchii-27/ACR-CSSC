@@ -5,7 +5,6 @@ steps:
     cmd: |
         bash -c 'echo "Scan and Schedule Patch {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"'
 
-  # Step 3: Patch the image with Copacetic
   - id: setup-data-dir
     cmd: bash mkdir ./data
 
@@ -17,6 +16,14 @@ steps:
       --ignore-unfixed \
       --format json \
       --output /workspace/data/vulnerability-report_trivy_{{now | date "2023-01-02"}}.json
+
+  # Step 2: Attach the vulnerability scan report to the image
+  - id: upload trivy report
+    cmd: |    
+      ghcr.io/oras-project/oras:v1.1.0 attach \
+      --artifact-type vulnerabilityScanResult/example \
+      {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
+      ./data/vulnerability-report_trivy_{{now | date "2023-01-02"}}.json
   
   - id: buildkitd
     cmd: moby/buildkit --addr tcp://0.0.0.0:8888
@@ -28,6 +35,7 @@ steps:
   - id: list-output-file
     cmd: bash ls -l /workspace/data
   
+  # Step 3: Patch the image with Copacetic
   - id: patch-with_copa
     cmd: | 
       ghcr.io/toddysm/cssc-framework/copacetic:1.0 \
