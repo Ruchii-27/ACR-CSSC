@@ -12,6 +12,7 @@ steps:
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
+        if [[ $line == Listing* ]] then continue; fi; \
         IFS='/' read -r -a array1 <<< "$line"
         IFS=':' read -r -a array2 <<< "${array1[1]}"
         IFS=',' read -r -a array3 <<< "${array2[1]}"
