@@ -9,7 +9,7 @@ steps:
   - cmd: bash -c 'echo -e "Scanning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
   - cmd: az login --identity 
   - cmd: |
-        bash -c 'while read line;do \
+        mcr.microsoft.com/azure-cli bash -c 'while read line;do \
         if [[ $line == Listing* ]] then continue; fi; \
         IFS='/' read -r -a array1 <<< "$line"
         IFS=':' read -r -a array2 <<< "${array1[1]}"

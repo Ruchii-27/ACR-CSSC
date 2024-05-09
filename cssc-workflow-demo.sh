@@ -66,13 +66,13 @@ function create_continuous_patching_workflow(){
   echo_separater
   echo "setting schedule for continuous patching.."  
   
-  az acr task timer update --name CSSC-TriggerRegistryScanAndPatch --registry $ACR_REGISTRY --timer-name daily --schedule "$cronExpression" --enabled true --output json >> "$LOG_FILE" 2>&1
+  az acr task timer update --name CSSC-TriggerScan --registry $ACR_REGISTRY --timer-name daily --schedule "$cronExpression" --enabled true --output json >> "$LOG_FILE" 2>&1
 
   if [ $? -ne 0 ]; then
 	  echo "Error while setting up cssc-continuous-patch timer. Check '$LOG_FILE' for details."
   fi
   
-  az acr task update --name CSSC-TriggerRegistryScanAndPatch -r $ACR_REGISTRY --status Enabled --output json >> "$LOG_FILE" 2>&1
+  az acr task update --name CSSC-TriggerScan -r $ACR_REGISTRY --status Enabled --output json >> "$LOG_FILE" 2>&1
 
   if [ $? -ne 0 ]; then
 	  echo "Error while enabling cssc-continuous-patch timer. Check '$LOG_FILE' for error messages."
@@ -228,7 +228,7 @@ function clean_registry_artifacts(){
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/tasks/CSSC-PatchImage" --api-version 2019-04-01
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/tasks/CSSC-ScanImageAndSchedulePatch" --api-version 2019-04-01
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/tasks/CSSC-ScanRepoAndSchedulePatch"  --api-version 2019-04-01
-	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/tasks/CSSC-TriggerRegistryScanAndPatch" --api-version 2019-04-01
+	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/tasks/CSSC-TriggerScan" --api-version 2019-04-01
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/providers/Microsoft.Authorization/roleAssignments/50220559-5db7-50bb-9956-41f1630dd837" --api-version 2020-04-01-preview
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/providers/Microsoft.Authorization/roleAssignments/8f321f77-0d4c-5c8d-bfcc-727a9817d5d0" --api-version 2020-04-01-preview
 	az resource delete -g $RESOURCE_GROUP --id "/subscriptions/b4e7b127-622b-4b84-aab3-a1d0ca5b381d/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.ContainerRegistry/registries/$ACR_REGISTRY/providers/Microsoft.Authorization/roleAssignments/ad056d1a-af2b-531b-b0e9-98b32b854e6d" --api-version 2020-04-01-preview

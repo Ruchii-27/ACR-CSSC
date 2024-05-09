@@ -80,7 +80,7 @@ resource roleAssignmentCSSCImageScaning 'Microsoft.Authorization/roleAssignments
 }
 
 resource CSSCRegistryScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-TriggerRegistryScanAndPatch'
+  name: 'CSSC-TriggerScan'
   location: AcrLocation
   parent: acr
   identity: {

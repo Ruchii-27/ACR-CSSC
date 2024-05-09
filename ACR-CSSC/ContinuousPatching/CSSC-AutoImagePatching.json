@@ -88,7 +88,7 @@
     {
       "type": "Microsoft.ContainerRegistry/registries/tasks",
       "apiVersion": "2019-06-01-preview",
-      "name": "[format('{0}/{1}', parameters('AcrName'), 'CSSC-TriggerRegistryScanAndPatch')]",
+      "name": "[format('{0}/{1}', parameters('AcrName'), 'CSSC-TriggerScan')]",
       "location": "[parameters('AcrLocation')]",
       "identity": {
         "type": "SystemAssigned"
@@ -122,14 +122,14 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', parameters('AcrName'))]",
-      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerRegistryScanAndPatch'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
+      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerRegistryScanAndPatch'), '2019-06-01-preview', 'full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan'), '2019-06-01-preview', 'full').identity.principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerRegistryScanAndPatch')]"
+        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan')]"
       ]
     }
   ]
