@@ -3,15 +3,13 @@ alias:
   values:
     ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
 steps:
-  - cmd: bash -c 'echo "Inside CSSC-TriggerRegistryScanAndPatch, browsing Registry {{.Run.Registry}} for images to be patched."'
+  - cmd: bash -c 'echo "Inside CSSC-TriggerScan, browsing Registry {{.Run.Registry}} for images to be patched based on --filter-policy."'
   - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 > filterRepos.txt
   - cmd: ruregistrycssc2.azurecr.io/acr:v1 cssc patch --filter-policy continuouspatchpolicy:v1 --show-patch-tags > filterReposWithPatchTags.txt
   - cmd: bash -c 'echo -e "Scanning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
-# - cmd: az cloud register -n dogfood --endpoint-active-directory https://login.windows-ppe.net --endpoint-active-directory-graph-resource-id https://graph.ppe.windows.net/ --endpoint-active-directory-resource-id https://management.core.windows.net/ --endpoint-gallery https://current.gallery.azure-test.net/ --endpoint-management https://management.core.windows.net/ --endpoint-resource-manager https://api-dogfood.resources.windows-int.net/ --suffix-storage-endpoint core.test-cint.azure-test.net --suffix-keyvault-dns .vault-int.azure-int.net --suffix-acr-login-server-endpoint .azurecr-test.io --endpoint-sql-management "https://management.core.windows.net:8443/"
-# - cmd: az cloud set -n dogfood
   - cmd: az login --identity 
   - cmd: |
-        mcr.microsoft.com/azure-cli bash -c 'while read line;do \
+        bash -c 'while read line;do \
         if [[ $line == Listing* ]] then continue; fi; \
         IFS='/' read -r -a array1 <<< "$line"
         IFS=':' read -r -a array2 <<< "${array1[1]}"

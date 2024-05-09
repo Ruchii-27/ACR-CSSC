@@ -21,7 +21,7 @@
     "taskContextPath": "https://github.com/siby-george/ACR-CSSC.git#Cssc-workflow",
     "imagePatching": "CSSCPatchImage.yaml",
     "imageScanning": "CSSCScanImageAndSchedulePatch.yaml",
-    "registryPatching": "CSSCTriggerRegistryScanAndPatch.yaml"
+    "triggerScanning": "CSSCTriggerScan.yaml"
   },
   "resources": [
     {
@@ -105,7 +105,7 @@
         "step": {
           "type": "FileTask",
           "contextPath": "[variables('taskContextPath')]",
-          "taskFilePath": "[variables('registryPatching')]"
+          "taskFilePath": "[variables('triggerScanning')]"
         },
         "isSystemTask": false,
         "trigger": {
