@@ -10,7 +10,7 @@ steps:
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
-        if [[ $line == DRY RUN* ]] then continue; fi; \
+        if [[ $line == DRY* ]] then continue; fi; \
         if [[ $line == Listing* ]] then continue; fi; \
         if [[ $line == Reading* ]] then continue; fi; \
         if [[ $line == Total* ]] then continue; fi; \
