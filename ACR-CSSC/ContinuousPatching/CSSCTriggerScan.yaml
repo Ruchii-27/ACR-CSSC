@@ -4,14 +4,14 @@ alias:
     ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
 steps:
   - cmd: bash -c 'echo "Inside CSSC-TriggerScan, browsing Registry {{.Run.Registry}} for images to be patched based on --filter-policy."'
-  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest > filterRepos.txt
-  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --show-patch-tags > filterReposWithPatchTags.txt
+  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --dry-run > filterRepos.txt
+  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --show-patch-tags --dry-run> filterReposWithPatchTags.txt
   - cmd: bash -c 'echo -e "Scanning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
+        if [[ $line == DRY RUN* ]] then continue; fi; \
         if [[ $line == Listing* ]] then continue; fi; \
-        if [[ $line == "" ]] then continue; fi; \
         if [[ $line == Reading* ]] then continue; fi; \
         if [[ $line == Total* ]] then continue; fi; \
         IFS='/' read -r -a array1 <<< "$line"
