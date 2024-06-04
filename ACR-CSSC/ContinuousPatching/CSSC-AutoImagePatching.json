@@ -18,7 +18,7 @@
     }
   },
   "variables": {
-    "taskContextPath": "https://github.com/siby-george/ACR-CSSC.git#Cssc-workflow",
+    "taskContextPath": "https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow",
     "imagePatching": "CSSCPatchImage.yaml",
     "imageScanning": "CSSCScanImageAndSchedulePatch.yaml",
     "triggerScanning": "CSSCTriggerScan.yaml"
