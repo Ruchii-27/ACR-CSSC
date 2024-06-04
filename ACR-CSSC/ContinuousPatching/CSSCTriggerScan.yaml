@@ -7,13 +7,12 @@ steps:
   - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --dry-run > filterRepos.txt
   - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --show-patch-tags --dry-run> filterReposWithPatchTags.txt
   - cmd: bash -c 'echo -e "Scanning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
+  # - cmd: bash -c 'sed -n '/^Listing/,/^Total/p' filterReposWithPatchTags.txt' > reposAndTags.txt
+  - cmd: bash -c sed -n '/^Listing/,/^Total/ {/^Listing/b;/^Total/b;p}' filterReposWithPatchTags.txt' > reposAndTags.txt
+  - cmd: bash -c 'cat reposAndTags.txt'
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
-        if [[ $line == DRY* ]] then continue; fi; \
-        if [[ $line == Listing* ]] then continue; fi; \
-        if [[ $line == Reading* ]] then continue; fi; \
-        if [[ $line == Total* ]] then continue; fi; \
         IFS='/' read -r -a array1 <<< "$line"
         IFS=':' read -r -a array2 <<< "${array1[1]}"
         IFS=',' read -r -a array3 <<< "${array2[1]}"
@@ -23,4 +22,4 @@ steps:
         TagName=${array3[1]};
         echo "Scheduling $ScanImageAndSchedulePatchTask for $RegistryName/$RepoName, Tag:$TagName, OriginalTag:$OriginalTag";
         az acr task run --name $ScanImageAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
-        done < filterReposWithPatchTags.txt;'
+        done < reposAndTags.txt;'
