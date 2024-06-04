@@ -3,13 +3,12 @@ alias:
   values:
     ScanImageAndSchedulePatchTask: CSSC-ScanImageAndSchedulePatch
 steps:
-  - cmd: bash -c 'echo "Inside CSSC-TriggerScan, browsing Registry {{.Run.Registry}} for images to be patched based on --filter-policy."'
-  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --dry-run > filterRepos.txt
-  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy continuouspatchpolicy:latest --show-patch-tags --dry-run> filterReposWithPatchTags.txt
-  - cmd: bash -c 'echo -e "Scanning Registry {{.Run.Registry}}, below images will be scanned and patched based on --filter-policy.\n$(cat filterRepos.txt)"'
-  # - cmd: bash -c 'sed -n '/^Listing/,/^Total/p' filterReposWithPatchTags.txt' > reposAndTags.txt
-  - cmd: bash -c sed -n '/^Listing/,/^Total/ {/^Listing/b;/^Total/b;p}' filterReposWithPatchTags.txt' > reposAndTags.txt
-  - cmd: bash -c 'cat reposAndTags.txt'
+  - cmd: bash -c 'echo "Inside CSSC-TriggerScan, getting images to be patched based on --filter-policy for Registry {{.Run.Registry}}."'
+  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy csscpolicies/patchpolicy:v1 --dry-run > filterRepos.txt
+  - cmd: bash -c 'sed -n "/^Listing/,/^Total/ {/^Listing/b;/^Total/b;p}" filterRepos.txt' > filterReposToDisplay.txt
+  - cmd: bash -c 'echo -e "Below images will be scanned and patched (if any os vulnerabilities found) based on --filter-policy.\n$(cat filterReposToDisplay.txt)"'
+  - cmd: ruregistrycssc2.azurecr.io/acr:v2 cssc patch --filter-policy csscpolicies/patchpolicy:v1 --show-patch-tags --dry-run> filterReposWithPatchTags.txt
+  - cmd: bash -c 'sed -n "/^Listing/,/^Total/ {/^Listing/b;/^Total/b;p}" filterReposWithPatchTags.txt' > filteredReposAndTags.txt
   - cmd: az login --identity 
   - cmd: |
         mcr.microsoft.com/azure-cli bash -c 'while read line;do \
@@ -22,4 +21,4 @@ steps:
         TagName=${array3[1]};
         echo "Scheduling $ScanImageAndSchedulePatchTask for $RegistryName/$RepoName, Tag:$TagName, OriginalTag:$OriginalTag";
         az acr task run --name $ScanImageAndSchedulePatchTask --registry $RegistryName --set SOURCE_REPOSITORY=$RepoName --set SOURCE_IMAGE_TAG=$TagName --set SOURCE_IMAGE_ORIGINAL_TAG=$OriginalTag --no-wait; \
-        done < reposAndTags.txt;'
+        done < filteredReposAndTags.txt;'
