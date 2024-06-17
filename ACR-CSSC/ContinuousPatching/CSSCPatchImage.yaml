@@ -11,7 +11,7 @@ steps:
     cmd: bash mkdir ./data
   - id: generate-trivy-report
     cmd: |
-      ghcr.io/aquasecurity/trivy image \
+      ruregistrycssc2.azurecr.io/cssc:latest trivy image \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       --vuln-type os \
       --ignore-unfixed \
@@ -39,12 +39,13 @@ steps:
     cmd: bash ls -l /workspace/data
   
   # Step 3: Patch the image with Copacetic
-  - id: patch-with_copa
+  - id: patch-image
     cmd: |
-      ghcr.io/toddysm/cssc-framework/copacetic:1.0 \
-      {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
-      $ScanReport \
-      {{.Values.SOURCE_IMAGE_TAG}}-patched
+      ruregistrycssc2.azurecr.io/cssc:latest copa patch \
+      -i "{{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}" \
+      -r ./data/$ScanReport \
+      -t "{{.Values.SOURCE_IMAGE_TAG}}-patched" \
+      --addr tcp://127.0.0.1:8888
     network: host
 
   - id: push-image
