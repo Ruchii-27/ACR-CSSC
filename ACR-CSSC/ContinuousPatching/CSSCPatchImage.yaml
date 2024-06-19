@@ -2,6 +2,7 @@ version: v1.1.0
 alias:
   values:
     ScanReport : os-vulnerability-report_trivy_{{.Values.SOURCE_REPOSITORY}}_{{.Values.SOURCE_IMAGE_TAG}}_$(date "+%Y-%m-%d").json
+    cssc : mcr.microsoft.com/acr/cssc:56f0765
 steps:
   # Step #1: Perform the vulnerability scan
   - id: print-inputs
@@ -11,7 +12,7 @@ steps:
     cmd: bash mkdir ./data
   - id: generate-trivy-report
     cmd: |
-      mcr.microsoft.com/acr/cssc:7045a1f trivy image \
+      cssc trivy image \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       --vuln-type os \
       --ignore-unfixed \
@@ -21,7 +22,7 @@ steps:
   # Step 2: Attach the vulnerability scan report to the image
   - id: upload-trivy-report
     cmd: |
-      mcr.microsoft.com/acr/cssc:7045a1f oras attach \
+      cssc oras attach \
       --artifact-type vulnerabilityScan/report \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       ./data/$ScanReport
@@ -41,7 +42,7 @@ steps:
   # Step 3: Patch the image with Copacetic
   - id: patch-image
     cmd: |
-      mcr.microsoft.com/acr/cssc:7045a1f copa patch \
+      cssc copa patch \
       -i "{{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}" \
       -r ./data/$ScanReport \
       -t "{{.Values.SOURCE_IMAGE_TAG}}-patched" \
