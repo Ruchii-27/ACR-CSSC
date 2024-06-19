@@ -12,7 +12,7 @@ steps:
 
   - id: generate-trivy-report
     cmd: |
-      ruregistrycssc2.azurecr.io/cssc:latest trivy image \
+      mcr.microsoft.com/acr/cssc:7045a1f trivy image \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       --vuln-type os \
       --ignore-unfixed \

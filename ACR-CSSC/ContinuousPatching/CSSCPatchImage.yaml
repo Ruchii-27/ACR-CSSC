@@ -11,7 +11,7 @@ steps:
     cmd: bash mkdir ./data
   - id: generate-trivy-report
     cmd: |
-      ruregistrycssc2.azurecr.io/cssc:latest trivy image \
+      mcr.microsoft.com/acr/cssc:7045a1f trivy image \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       --vuln-type os \
       --ignore-unfixed \
@@ -21,7 +21,7 @@ steps:
   # Step 2: Attach the vulnerability scan report to the image
   - id: upload-trivy-report
     cmd: |
-      ghcr.io/oras-project/oras:v1.1.0 attach \
+      mcr.microsoft.com/acr/cssc:7045a1f oras attach \
       --artifact-type vulnerabilityScan/report \
       {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} \
       ./data/$ScanReport
@@ -41,7 +41,7 @@ steps:
   # Step 3: Patch the image with Copacetic
   - id: patch-image
     cmd: |
-      ruregistrycssc2.azurecr.io/cssc:latest copa patch \
+      mcr.microsoft.com/acr/cssc:7045a1f copa patch \
       -i "{{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}" \
       -r ./data/$ScanReport \
       -t "{{.Values.SOURCE_IMAGE_TAG}}-patched" \
