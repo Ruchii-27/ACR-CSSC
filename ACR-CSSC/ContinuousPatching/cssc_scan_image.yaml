@@ -1,7 +1,7 @@
 version: v1.1.0
 alias:
   values:
-    patchimagetask: CSSC-PatchImage
+    patchimagetask: cssc-patch-image
     DATE: $(date "+%Y-%m-%d")
     cssc : mcr.microsoft.com/acr/cssc:56f0765
 steps:

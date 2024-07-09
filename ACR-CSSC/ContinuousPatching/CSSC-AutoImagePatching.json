@@ -19,15 +19,15 @@
   },
   "variables": {
     "taskContextPath": "https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow",
-    "imagePatching": "CSSCPatchImage.yaml",
-    "imageScanning": "CSSCScanImageAndSchedulePatch.yaml",
-    "triggerScanning": "CSSCTriggerScan.yaml"
+    "imagePatching": "cssc_patch_image.yaml",
+    "imageScanning": "cssc_scan_image.yaml",
+    "triggerScanning": "cssc_trigger_workflow.yaml"
   },
   "resources": [
     {
       "type": "Microsoft.ContainerRegistry/registries/tasks",
       "apiVersion": "2019-06-01-preview",
-      "name": "[format('{0}/{1}', parameters('AcrName'), 'CSSC-PatchImage')]",
+      "name": "[format('{0}/{1}', parameters('AcrName'), 'cssc-patch-image')]",
       "location": "[parameters('AcrLocation')]",
       "properties": {
         "platform": {
@@ -49,7 +49,7 @@
     {
       "type": "Microsoft.ContainerRegistry/registries/tasks",
       "apiVersion": "2019-06-01-preview",
-      "name": "[format('{0}/{1}', parameters('AcrName'), 'CSSC-ScanImageAndSchedulePatch')]",
+      "name": "[format('{0}/{1}', parameters('AcrName'), 'cssc-scan-image')]",
       "location": "[parameters('AcrLocation')]",
       "identity": {
         "type": "SystemAssigned"
@@ -75,20 +75,20 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', parameters('AcrName'))]",
-      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-ScanImageAndSchedulePatch'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
+      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-scan-image'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-ScanImageAndSchedulePatch'), '2019-06-01-preview', 'full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-scan-image'), '2019-06-01-preview', 'full').identity.principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-ScanImageAndSchedulePatch')]"
+        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-scan-image')]"
       ]
     },
     {
       "type": "Microsoft.ContainerRegistry/registries/tasks",
       "apiVersion": "2019-06-01-preview",
-      "name": "[format('{0}/{1}', parameters('AcrName'), 'CSSC-TriggerScan')]",
+      "name": "[format('{0}/{1}', parameters('AcrName'), 'cssc-trigger-workflow')]",
       "location": "[parameters('AcrLocation')]",
       "identity": {
         "type": "SystemAssigned"
@@ -122,14 +122,14 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2022-04-01",
       "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', parameters('AcrName'))]",
-      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
+      "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-trigger-workflow'), subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c'))]",
       "properties": {
         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan'), '2019-06-01-preview', 'full').identity.principalId]",
+        "principalId": "[reference(resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-trigger-workflow'), '2019-06-01-preview', 'full').identity.principalId]",
         "principalType": "ServicePrincipal"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'CSSC-TriggerScan')]"
+        "[resourceId('Microsoft.ContainerRegistry/registries/tasks', parameters('AcrName'), 'cssc-trigger-workflow')]"
       ]
     }
   ]

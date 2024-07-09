@@ -2,9 +2,9 @@ param AcrName string
 param AcrLocation string = resourceGroup().location
 
 var taskContextPath='https://github.com/Ruchii-27/ACR-CSSC.git#csscworkflow'
-var imagePatching='ACR-CSSC\\ContinuousPatching\\CSSCPatchImage.yaml'
-var imageScanning='ACR-CSSC\\ContinuousPatching\\CSSCScanImageAndSchedulePatch.yaml'
-var triggerScanning='ACR-CSSC\\ContinuousPatching\\CSSCTriggerScan.yaml'
+var imagePatching='ACR-CSSC\\ContinuousPatching\\cssc_patch_image.yaml'
+var imageScanning='ACR-CSSC\\ContinuousPatching\\cssc_scan_image.yaml'
+var triggerScanning='ACR-CSSC\\ContinuousPatching\\cssc_trigger_workflow.yaml'
 
 resource contributorRoleDefinition 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
   scope: subscription()
@@ -16,7 +16,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2019-05-01' existing = {
 }
 
 resource CSSCPatchImage 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-PatchImage'
+  name: 'cssc-patch-image'
   location: AcrLocation
   parent: acr
   tags:{
@@ -42,7 +42,7 @@ resource CSSCPatchImage 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01
 }
 
 resource CSSCImageScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-ScanImageAndSchedulePatch'
+  name: 'cssc-scan-image'
   location: AcrLocation
   parent: acr
   identity: {
@@ -80,7 +80,7 @@ resource roleAssignmentCSSCImageScaning 'Microsoft.Authorization/roleAssignments
 }
 
 resource CSSCRegistryScaning 'Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview' = {
-  name: 'CSSC-TriggerScan'
+  name: 'cssc-trigger-workflow'
   location: AcrLocation
   parent: acr
   identity: {
