@@ -19,6 +19,7 @@ steps:
       --ignore-unfixed \
       --format json \
       --timeout 30m \
+      --scanners vuln \
       --output /workspace/data/vulnerability-report_trivy_$DATE.json
   - cmd: cssc jq 'if .Results == null or (.Results | length) == 0 then 0 else [.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities | length] | add end' /workspace/data/vulnerability-report_trivy_$DATE.json > /workspace/data/vulCount.txt
   - cmd: bash echo "Generated vulnerability report at /workspace/data/vulnerability-report_trivy_$DATE.json" 

@@ -18,6 +18,7 @@ steps:
       --ignore-unfixed \
       --format json \
       --timeout 30m \
+      --scanners vuln \
       --output /workspace/data/$ScanReport
 
   # Step 2: Attach the vulnerability scan report to the image
