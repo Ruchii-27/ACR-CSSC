@@ -1,7 +1,8 @@
 version: v1.1.0
 alias:
-  values:
+  values:    
     patchimagetask: cssc-patch-image
+    ScanReport : os-vulnerability-report_trivy_{{ regexReplaceAll "[^a-zA-Z0-9]" .Values.SOURCE_REPOSITORY "-" }}_{{.Values.SOURCE_IMAGE_TAG}}_$(date "+%Y-%m-%d").json
     DATE: $(date "+%Y-%m-%d")
     cssc : mcr.microsoft.com/acr/cssc:0995fb8
 steps:
@@ -9,6 +10,7 @@ steps:
     cmd: |
         bash -c 'echo "Scanning image for vulnerability and patch {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} for tag {{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}"'
         bash -c 'echo "Scanning repo: {{.Values.SOURCE_REPOSITORY}}, Tag:{{.Values.SOURCE_IMAGE_TAG}}, OriginalTag:{{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}"'
+
   - id: setup-data-dir
     cmd: bash mkdir ./data
 
@@ -25,27 +27,54 @@ steps:
       --timeout 30m \
       --scanners vuln \
       --db-repository "ghcr.io/aquasecurity/trivy-db:2","public.ecr.aws/aquasecurity/trivy-db" \
-      --output /workspace/data/vulnerability-report_trivy_$DATE.json
+      --output /workspace/data/$ScanReport
 
-  - cmd: cssc jq 'if .Results == null or (.Results | length) == 0 then 0 else [.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities | length] | add end' /workspace/data/vulnerability-report_trivy_$DATE.json > /workspace/data/vulCount.txt
-  - cmd: cssc jq 'if .Metadata.OS.EOSL == null then false else .Metadata.OS.EOSL end' /workspace/data/vulnerability-report_trivy_$DATE.json > /workspace/data/eosl.txt
+  - cmd: cssc jq 'if .Results == null or (.Results | length) == 0 then 0 else [.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities | length] | add end' /workspace/data/$ScanReport > /workspace/data/vulCount.txt
+  - cmd: cssc jq 'if .Metadata.OS.EOSL == null then false else .Metadata.OS.EOSL end' /workspace/data/$ScanReport > /workspace/data/eosl.txt
   - cmd: |        
         bash -c 'echo "Vulnerabilities found for image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} -> $(cat /workspace/data/vulCount.txt)"'
         bash -c 'echo "EOSL for the image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} -> $(cat /workspace/data/eosl.txt)"'
 
-  - cmd: az login --identity
-  - cmd: |
-      az -c '
+  - id: buildkitd
+    cmd: moby/buildkit --addr tcp://0.0.0.0:8888
+    # cmd: mcr.microsoft.com/oss/v2/moby/buildkit:v0.18.2 --addr tcp://0.0.0.0:8888
+    entrypoint: buildkitd
+    detach: true
+    privileged: true
+    ports: ["127.0.0.1:8888:8888/tcp"]
+
+  - id: patch-image
+    retries: 3
+    retryDelay: 3
+    timeout: 1800
+    cmd: |
+      cssc -c '      
       vulCount=$(cat /workspace/data/vulCount.txt) && \
       eoslValue=$(cat /workspace/data/eosl.txt) && \
       if ! [[ "$vulCount" =~ ^[0-9]+$ ]]; then vulCount=0; fi && \
       if [ "$eoslValue" = "true" ]; then \
         echo "PATCHING will be skipped as EOSL is $eoslValue for image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"; \
-      elif [ $vulCount -gt 0 ]; then \
+        exit 0; \
+      elif [ $vulCount -eq 0 ]; then \
+        echo "PATCHING will be skipped as no vulnerability found in the image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"; \
+        exit 0; \
+      else \
           echo "Total OS vulnerabilities found -> $vulCount"; \
-          echo "PATCHING task scheduled for image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}, new patch tag will be {{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}"; \
-          az acr task run --name $patchimagetask --registry $RegistryName --set SOURCE_REPOSITORY={{.Values.SOURCE_REPOSITORY}} --set SOURCE_IMAGE_TAG={{.Values.SOURCE_IMAGE_ORIGINAL_TAG}} --set SOURCE_IMAGE_NEWPATCH_TAG={{.Values.SOURCE_IMAGE_NEWPATCH_TAG}} --no-wait; \
-        else \
-          echo "PATCHING will be skipped as no vulnerability found in the image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}"; \
+          # echo "PATCHING scheduled for image {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}, new patch tag will be {{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}"; \
+          echo "New Patch tag is {{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}"; \
+          if [ "{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}" != "patched" ] && [ {{.Values.SOURCE_IMAGE_NEWPATCH_TAG}} -gt 999 ]; then \
+            echo "New Patch tag is greater than 999. No more than 1000 patches can be created for a tag. Exiting the patching workflow."; \
+            exit 1; \
+          else \
+            oras attach --artifact-type vulnerabilityScan/report {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} ./data/$ScanReport ; \
+            copa patch \
+            -i "{{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}" \
+            -r ./data/$ScanReport \
+            -t "{{.Values.SOURCE_IMAGE_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}" \
+            --timeout 30m \
+            --addr tcp://127.0.0.1:8888; \
+            docker push {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}; \
+          fi; \
       fi'
+    network: host
     entryPoint: /bin/bash
