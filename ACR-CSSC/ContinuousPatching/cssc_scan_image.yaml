@@ -3,6 +3,7 @@ alias:
   values:    
     patchimagetask: cssc-patch-image
     ScanReport : os-vulnerability-report_trivy_{{ regexReplaceAll "[^a-zA-Z0-9]" .Values.SOURCE_REPOSITORY "-" }}_{{.Values.SOURCE_IMAGE_TAG}}_$(date "+%Y-%m-%d").json
+    VexDocument : copa_vex_{{ regexReplaceAll "[^a-zA-Z0-9]" .Values.SOURCE_REPOSITORY "-" }}_{{.Values.SOURCE_IMAGE_TAG}}_$(date "+%Y-%m-%d").json
     DATE: $(date "+%Y-%m-%d")
     cssc : mcr.microsoft.com/acr/cssc:0995fb8
 steps:
@@ -71,9 +72,12 @@ steps:
             -i "{{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}" \
             -r ./data/$ScanReport \
             -t "{{.Values.SOURCE_IMAGE_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}" \
+            --format="openvex" \
+            --output /workspace/data/$VexDocument \
             --timeout 30m \
             --addr tcp://127.0.0.1:8888; \
             docker push {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}}; \
+            oras attach --artifact-type copa/vexDocument {{.Run.Registry}}/{{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}}-{{.Values.SOURCE_IMAGE_NEWPATCH_TAG}} ./data/$VexDocument; \
           fi; \
       fi'
     network: host
