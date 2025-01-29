@@ -1,0 +1,29 @@
+{
+  "@context": "https://openvex.dev/ns",
+  "@id": "https://openvex.dev/docs/public/vex-6a5ef4fec53aa892686b616901a43812ebe78281ff88ecb6503b8352fdb2cb0b",
+  "author": "Project Copacetic",
+  "timestamp": "2025-01-29T05:06:00.515096796Z",
+  "version": 1,
+  "tooling": "Project Copacetic",
+  "statements": [
+    {
+      "vulnerability": {
+        "@id": "CVE-2024-9143"
+      },
+      "products": [
+        {
+          "@id": "pkg:oci/ruregistrycssc2.azurecr.io/node:22-alpine3.19-1",
+          "subcomponents": [
+            {
+              "@id": "pkg:apk/alpine/libcrypto3@3.1.7-r1?arch=amd64"
+            },
+            {
+              "@id": "pkg:apk/alpine/libssl3@3.1.7-r1?arch=amd64"
+            }
+          ]
+        }
+      ],
+      "status": "fixed"
+    }
+  ]
+}
