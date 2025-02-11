@@ -3,18 +3,18 @@ alias:
   values:
     patchimagetask: cssc-patch-image
     DATE: $(date "+%Y-%m-%d")
-    cssc : mcr.microsoft.com/acr/cssc:0995fb8
+    cssc : mcr.microsoft.com/acr/cssc:f86c1b6
 steps:
   - id: print-inputs
     cmd: |
-        bash -c 'echo "Scanning image for vulnerability and patch {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} for tag {{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}"'
+        bash -c 'echo "Scanning image for vulnerability {{.Values.SOURCE_REPOSITORY}}:{{.Values.SOURCE_IMAGE_TAG}} for tag {{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}"'
         bash -c 'echo "Scanning repo: {{.Values.SOURCE_REPOSITORY}}, Tag:{{.Values.SOURCE_IMAGE_TAG}}, OriginalTag:{{.Values.SOURCE_IMAGE_ORIGINAL_TAG}}"'
   - id: setup-data-dir
     cmd: bash mkdir ./data
 
   - id: generate-trivy-report
     retries: 3
-    retryDelay: 3
+    retryDelay: 5
     timeout: 1800
     cmd: |
       cssc trivy image \
